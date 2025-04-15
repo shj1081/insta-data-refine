@@ -26,17 +26,28 @@ if CACHE_IMAGES:
     os.makedirs(CACHE_DIR, exist_ok=True)
 
 # === 파일 로딩 ===
-with open("post.json", "r", encoding="utf-8") as f:
-    posts = json.load(f)
-
-with open("reels.json", "r", encoding="utf-8") as f:
-    reels = json.load(f)
-
-with open("profile.json", "r", encoding="utf-8") as f:
-    profiles = json.load(f)
+posts = load_json_file("post.json", "Post")
+reels = load_json_file("reels.json", "Reels")
+profiles = load_json_file("profile.json", "Profile")
 
 # === 프로필 딕셔너리화 ===
 profile_dict = {p["id"]: p for p in profiles}
+
+# === 파일 로딩 함수
+def load_json_file(path: str, name: str):
+    print(f"[INFO] {name} 파일 로딩 중: {path}")
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"[에러] {name} 파일을 찾을 수 없습니다: {path}")
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"[에러] {name} JSON 파싱 실패: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"[에러] {name} 파일 로딩 중 알 수 없는 오류 발생: {e}")
+        sys.exit(1)
 
 
 # === 지연 측정 및 진행 상황 표시 ===

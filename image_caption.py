@@ -275,8 +275,19 @@ class JsonProcessor:
         start_time = time.time()
         
         print(f"JSON 파일 로딩 중: {self.config.INPUT_JSON_PATH}")
-        with open(self.config.INPUT_JSON_PATH, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        try:
+            with open(self.config.INPUT_JSON_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            print(f"[에러] 파일을 찾을 수 없습니다: {self.config.INPUT_JSON_PATH}")
+            sys.exit(1)
+        except json.JSONDecodeError as e:
+            print(f"[에러] JSON 파싱 실패: {e}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"[에러] 파일 로딩 중 알 수 없는 문제가 발생했습니다: {e}")
+            sys.exit(1)
+
         
         # 처리할 이미지 목록 수집
         image_tasks = self.collect_images_to_process(data)
