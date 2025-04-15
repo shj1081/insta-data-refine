@@ -1,3 +1,4 @@
 static/
 *.json
 .DS_Store
+*.csv

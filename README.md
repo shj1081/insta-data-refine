@@ -12,6 +12,13 @@
 - refine.py에서 생성된 JSON 파일의 이미지 field에 대해 BLIP 모델을 사용한 캡션 생성을 수행  
 - 필요에 따라 CLIP 모델 기반 캡션 스코어링과 batch 처리를 지원하며, 생성된 캡션은 원본 JSON에 추가되어 새로운 파일로 저장
 
+**to_csv.py**:
+
+- refine.py 또는 image_caption.py에서 생성된 JSON 파일을 머신러닝 학습에 적합한 형태의 CSV 파일로 변환
+- `post` 또는 `reel` 중 하나의 타입만 선택적으로 변환 가능
+- caption의 경우 `\n`으로 분리된 여러 줄을 구분자(`|||`)로 이어붙여 하나의 필드로 저장
+- 리스트 형태의 `hashtags`, `mentions`, `images` 등은 쉼표 `,`로 연결된 문자열로 저장
+
 ## Pre-requisites
 
 ```
@@ -102,6 +109,39 @@ pip install aiohttp aiofiles pillow torch transformers tqdm
 - batch 처리를 위해 PyTorch의 DataLoader와 커스텀 collate 함수(`custom_collate_fn`)를 사용하여 이미지와 파일 경로를 함께 로드
 - batch 처리 중 오류가 발생하면, 각 이미지를 개별적으로 처리하여 캡션 생성을 시도
 
+## to_csv.py
+
+### 기능 및 동작 로직
+
+- `refine.py` 또는 `image_caption.py`를 통해 생성된 JSON 파일을 머신러닝 학습에 적합한 형태의 **CSV 파일로 변환**
+- `post` 또는 `reel` 중 하나의 타입만 선택적으로 변환 가능 (`Config.TYPE`)
+- 구조가 다른 두 JSON 포맷을 통합 처리하지 않고, 명시된 타입만 변환
+- caption의 경우 `\n`으로 분리된 여러 줄을 구분자(`|||`)로 이어붙여 하나의 필드로 저장
+  - ex: `"문장1\n\n\n문장2"` → `"문장1|||문장2"`  
+- 리스트 형태의 `hashtags`, `mentions`, `images` 등은 쉼표 `,`로 연결된 문자열로 저장
+
+### 주요 기능
+
+- **Impression Score 계산 (옵션)**  
+  - 설정에 따라 `(likesCount + commentsCount) / followersCount`를 계산하여 `impression` 컬럼으로 추가
+  - 비율 정보로서 콘텐츠의 반응도를 수치로 파악할 수 있음
+  - `Config.ENABLE_IMPRESSION = True`일 경우 자동 계산
+
+- **UTF-8 BOM 적용 저장**  
+  - 한글 데이터가 포함되어 있어도 CSV 파일이 깨지지 않도록 `"utf-8-sig"` 인코딩으로 저장
+
+### 주요 설정 값
+
+- **타입 지정**:  
+  - `Config.TYPE`: `"post"` 또는 `"reel"` 중 선택
+
+- **캡션 처리**:  
+  - `\n`이 여러 개 있을 경우 `\n+`로 축소 후 구분자 `|||`로 결합
+
+- **Impression 계산 옵션**:  
+  - `Config.ENABLE_IMPRESSION`: True로 설정 시 `likes + comments / followers` 컬럼 생성
+
+
 ## 사용 방법
 
 1. **데이터 준비**:  
@@ -118,3 +158,11 @@ pip install aiohttp aiofiles pillow torch transformers tqdm
    python image_caption.py
    ```
    - refine.py에서 생성된 JSON 파일의 이미지에 대해 캡션을 생성하고, 결과가 포함된 새로운 JSON 파일을 저장
+
+4. **CSV 변환 (to_csv.py 실행)**:
+    ```bash
+    python to_csv.py
+    ```
+
+   - `Config.TYPE`, `Config.INPUT_JSON_PATH`, `Config.ENABLE_IMPRESSION` 등의 설정 값을 변경하여 원하는 데이터 타입 및 출력 내용을 조정 가능
+   - 실행 결과는 동일한 위치에 `.csv` 파일로 저장됨
