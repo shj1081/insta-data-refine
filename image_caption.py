@@ -328,8 +328,30 @@ class JsonProcessor:
                         results[(item_idx, img_idx)] = caption
                 
                 batch_idx += 1
-                if batch_idx % 5 == 0:
-                    print(f"진행 상황: {batch_idx * self.config.BATCH_SIZE}/{len(image_tasks)}")
+                
+                # 배치 처리 실행
+                print(f"배치 처리 시작 (배치 크기: {self.config.BATCH_SIZE})")
+                batch_idx = 0
+
+                for batch in tqdm(dataloader, desc="이미지 캡션 생성", disable=self.config.RUN_IN_BACKGROUND):
+                    images, image_paths = batch
+                    images = [img for img in images]
+                    
+                    path_to_indices = {task[2]: (task[0], task[1]) for task in image_tasks}
+                    
+                    batch_results = self.caption_generator.generate_captions_batch(images, image_paths)
+                    
+                    for path, caption in batch_results.items():
+                        if path in path_to_indices:
+                            item_idx, img_idx = path_to_indices[path]
+                            results[(item_idx, img_idx)] = caption
+
+                    batch_idx += 1
+                    
+                    # 백그라운드 모드에서만 로그 출력
+                    if self.config.RUN_IN_BACKGROUND and batch_idx % 5 == 0:
+                        print(f"진행 상황: {batch_idx * self.config.BATCH_SIZE}/{len(image_tasks)}")
+
         else:
             # 단일 이미지 처리
             print("단일 이미지 처리 시작")
