@@ -82,7 +82,7 @@ pip install aiohttp aiofiles pillow torch transformers tqdm
 - **JSON 업데이트 및 저장**:  
   - 생성된 캡션을 원본 JSON 데이터에 추가한 후, 새 JSON 파일(예: `merged_dataset_post_with_images_with_captions.json`)로 저장
 
-## 주요 설정 값
+### 주요 설정 값
 
 - **경로 설정**:  
   - `INPUT_JSON_PATH`: 입력 JSON 파일 경로  
@@ -104,7 +104,7 @@ pip install aiohttp aiofiles pillow torch transformers tqdm
   - `NUM_WORKERS`: 데이터 로딩 워커 수  
   - **DEVICE**: GPU 사용 가능 여부에 따라 "cuda" 또는 "cpu" 선택
 
-## Batch 처리 및 fallback 메커니즘
+### Batch 처리 및 fallback 메커니즘
 
 - batch 처리를 위해 PyTorch의 DataLoader와 커스텀 collate 함수(`custom_collate_fn`)를 사용하여 이미지와 파일 경로를 함께 로드
 - batch 처리 중 오류가 발생하면, 각 이미지를 개별적으로 처리하여 캡션 생성을 시도
