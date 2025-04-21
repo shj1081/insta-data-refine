@@ -5,6 +5,7 @@ import hashlib
 import asyncio
 import aiohttp
 import aiofiles
+import sys
 from functools import partial
 from pathlib import Path
 import shutil
@@ -25,14 +26,6 @@ os.makedirs(STATIC_IMAGE_DIR, exist_ok=True)
 if CACHE_IMAGES:
     os.makedirs(CACHE_DIR, exist_ok=True)
 
-# === 파일 로딩 ===
-posts = load_json_file("post.json", "Post")
-reels = load_json_file("reels.json", "Reels")
-profiles = load_json_file("profile.json", "Profile")
-
-# === 프로필 딕셔너리화 ===
-profile_dict = {p["id"]: p for p in profiles}
-
 # === 파일 로딩 함수
 def load_json_file(path: str, name: str):
     print(f"[INFO] {name} 파일 로딩 중: {path}")
@@ -48,6 +41,14 @@ def load_json_file(path: str, name: str):
     except Exception as e:
         print(f"[에러] {name} 파일 로딩 중 알 수 없는 오류 발생: {e}")
         sys.exit(1)
+
+# === 파일 로딩 ===
+posts = load_json_file("post.json", "Post")
+reels = load_json_file("reels.json", "Reels")
+profiles = load_json_file("profile.json", "Profile")
+
+# === 프로필 딕셔너리화 ===
+profile_dict = {p["id"]: p for p in profiles}
 
 
 # === 지연 측정 및 진행 상황 표시 ===
